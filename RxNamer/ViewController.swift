@@ -20,14 +20,15 @@ class ViewController: UIViewController {
     
     //variables
     let disposeBag = DisposeBag()
-    
+    var namesArray: Variable<[String]> = Variable([])
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        bind()
+        bindToTextField()
+        bindToButton()
     }
 
-    func bind() {
+    func bindToTextField() {
         
         namesEntryTextField.rx.text
             .debounce(0.5, scheduler: MainScheduler.instance)
@@ -43,6 +44,17 @@ class ViewController: UIViewController {
             .bind(to: helloLabel.rx.text)
             .disposed(by: disposeBag)
         
+    }
+    
+    func bindToButton() {
+        submitButton.rx.tap.subscribe(onNext: {
+            if self.namesEntryTextField.text != "" {
+                self.namesArray.value.append((self.namesEntryTextField.text!.capitalized))
+                self.namesLabel.rx.text.onNext(self.namesArray.value.joined(separator: ", "))
+                self.namesEntryTextField.rx.text.onNext("")
+                self.helloLabel.rx.text.onNext("Type your name below")
+            }
+        }).disposed(by: disposeBag)
     }
 
 }
