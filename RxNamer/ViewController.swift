@@ -7,6 +7,8 @@
 //
 
 import UIKit
+import RxCocoa
+import RxSwift
 
 class ViewController: UIViewController {
 
@@ -16,12 +18,32 @@ class ViewController: UIViewController {
     @IBOutlet weak var namesLabel: UILabel!
     @IBOutlet weak var submitButton: UIButton!
     
+    //variables
+    let disposeBag = DisposeBag()
     
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        bind()
     }
 
+    func bind() {
+        
+        namesEntryTextField.rx.text
+            .debounce(0.5, scheduler: MainScheduler.instance)
+            .map {
+                
+                if $0 == "" {
+                    return "Type your name below"
+                } else {
+                    return "Hello \($0!)."
+                }
+          
+            }
+            .bind(to: helloLabel.rx.text)
+            .disposed(by: disposeBag)
+        
+    }
 
 }
 
